@@ -1,4 +1,5 @@
 (ns com.wsscode.log
+  #?(:cljs (:require-macros [com.wsscode.log]))
   (:require [com.wsscode.log.protocols :as logp]
             [com.fulcrologic.guardrails.core :refer [<- => >def >defn >fdef ? |]]
             [clojure.string :as str])
@@ -42,26 +43,31 @@
      ::timestamp (now)}
     data))
 
-(defmacro debug
-  [event-name event-data]
-  `(log-event *active-logger*
-     (make-event ::level-debug ~event-name ~event-data)))
+#?(:clj
+   (defmacro debug
+     [event-name event-data]
+     `(log-event *active-logger*
+        (make-event ::level-debug ~event-name ~event-data))))
 
-(defmacro info
-  [event-name event-data]
-  `(log-event *active-logger*
-     (make-event ::level-info ~event-name ~event-data)))
+#?(:clj
+   (defmacro info
+     [event-name event-data]
+     `(log-event *active-logger*
+        (make-event ::level-info ~event-name ~event-data))))
 
-(defmacro warn
-  [event-name event-data]
-  `(log-event *active-logger*
-     (make-event ::level-warn ~event-name ~event-data)))
+#?(:clj
+   (defmacro warn
+     [event-name event-data]
+     `(log-event *active-logger*
+        (make-event ::level-warn ~event-name ~event-data))))
 
-(defmacro error
-  [event-name event-data]
-  `(log-event *active-logger*
-     (make-event ::level-error ~event-name ~event-data)))
+#?(:clj
+   (defmacro error
+     [event-name event-data]
+     `(log-event *active-logger*
+        (make-event ::level-error ~event-name ~event-data))))
 
-(defmacro with-logger [logger & body]
-  `(binding [*active-logger* ~logger]
-     ~@body))
+#?(:clj
+   (defmacro with-logger [logger & body]
+     `(binding [*active-logger* ~logger]
+        ~@body)))
