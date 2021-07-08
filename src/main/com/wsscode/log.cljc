@@ -22,7 +22,7 @@
    ::level-warn  3
    ::level-error 4})
 
-(defrecord PrintLogger [min-level]
+(deftype PrintLogger [min-level]
   logp/Logger
   (-log-event [_this {::keys [timestamp level event] :as data}]
               (print (str
