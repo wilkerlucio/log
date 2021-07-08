@@ -1,8 +1,7 @@
 (ns com.wsscode.log
   (:require
     [clojure.string :as str]
-    [com.fulcrologic.guardrails.core :refer [<- => >def >defn >fdef ? |]]
-    [com.wsscode.log.protocols :as logp])
+    [com.fulcrologic.guardrails.core :refer [<- => >def >defn >fdef ? |]])
   #?(:cljs
      (:require-macros
        [com.wsscode.log]))
@@ -22,25 +21,21 @@
    ::level-warn  3
    ::level-error 4})
 
-(deftype PrintLogger [min-level]
-  logp/Logger
-  (-log-event [_this {::keys [timestamp level event] :as data}]
-              (print (str
-                       timestamp " "
-                       (if level (str (str/upper-case (subs (name level) 6)) " "))
-                       event
-                       " - "
-                       (pr-str (dissoc data ::level ::event ::timestamp))
-                       "\n"))))
+(defn print-logger [_]
+  (fn print-logger-internal [{::keys [timestamp level event] :as data}]
+    (print (str
+             timestamp " "
+             (if level (str (str/upper-case (subs (name level) 6)) " "))
+             event
+             " - "
+             (pr-str (dissoc data ::level ::event ::timestamp))
+             "\n"))))
 
-(def ^:dynamic *active-logger* (->PrintLogger ::level-debug))
+(def ^:dynamic *active-logger* (print-logger {::min-level ::level-debug}))
 
 (defn now []
   #?(:clj  (Date.)
      :cljs (js/Date.)))
-
-(defn log-event [logger event]
-  (logp/-log-event logger event))
 
 (defn make-event [event-level event-name data]
   (merge
@@ -52,26 +47,26 @@
 #?(:clj
    (defmacro debug
      [event-name event-data]
-     `(log-event *active-logger*
-                 (make-event ::level-debug ~event-name ~event-data))))
+     `(*active-logger*
+        (make-event ::level-debug ~event-name ~event-data))))
 
 #?(:clj
    (defmacro info
      [event-name event-data]
-     `(log-event *active-logger*
-                 (make-event ::level-info ~event-name ~event-data))))
+     `(*active-logger*
+        (make-event ::level-info ~event-name ~event-data))))
 
 #?(:clj
    (defmacro warn
      [event-name event-data]
-     `(log-event *active-logger*
-                 (make-event ::level-warn ~event-name ~event-data))))
+     `(*active-logger*
+        (make-event ::level-warn ~event-name ~event-data))))
 
 #?(:clj
    (defmacro error
      [event-name event-data]
-     `(log-event *active-logger*
-                 (make-event ::level-error ~event-name ~event-data))))
+     `(*active-logger*
+        (make-event ::level-error ~event-name ~event-data))))
 
 #?(:clj
    (defmacro with-logger [logger & body]
